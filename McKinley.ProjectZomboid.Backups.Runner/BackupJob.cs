@@ -40,7 +40,7 @@ public class BackupJob
 
         foreach (var save in saves)
         {
-            await _backupService.BackupAsync(save);
+            await _backupService.BackupAsync(save, _fileSystem.FileInfo.New(_settings.BackupZipFileLocation));
         }
 
         return 0;
