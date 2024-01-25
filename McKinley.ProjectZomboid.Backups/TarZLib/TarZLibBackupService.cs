@@ -30,6 +30,8 @@ public class TarZLibBackupService : BaseBackupService,
                                     ? $"Found backup tar/zlib file: '{destination.FullName}'"
                                     : $"Backup tar/zlib file not found. Will create: '{destination.FullName}'");
 
+        // TODO: This will overwrite the entire file. We should create a temporary file, transfer the contents to it, then append any new backups.
+
         await using Stream tarZLibStream = destination.Exists
                                                ? destination.Open(FileMode.Open, FileAccess.Write)
                                                : destination.Create();
