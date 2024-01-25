@@ -15,6 +15,9 @@ public abstract class BaseBackupService
         _settings = settings;
     }
 
+    /// <summary>
+    /// Enumerates the files in a directory and creates a unique entry name, then calls the `forEachFileAsync` parameter with the file and the entry name.
+    /// </summary>
     protected async Task EnumerateFilesAsync(IDirectoryInfo directoryInfo, Func<string, IFileInfo, Task> forEachFileAsync)
     {
         // Create a unique timestamp for the backup
