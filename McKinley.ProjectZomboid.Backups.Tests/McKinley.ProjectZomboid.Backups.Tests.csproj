@@ -16,4 +16,8 @@
     <ProjectReference Include="..\McKinley.ProjectZomboid.Backups\McKinley.ProjectZomboid.Backups.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Saves\" />
+  </ItemGroup>
+
 </Project>
