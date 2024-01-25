@@ -9,7 +9,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "McKinley.ProjectZomboid.Bac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "McKinley.ProjectZomboid.Backups.Tests", "McKinley.ProjectZomboid.Backups.Tests\McKinley.ProjectZomboid.Backups.Tests.csproj", "{3E37CB4C-4FF8-40F6-8B98-9C0518917B65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McKinley.ProjectZomboid.Backups.Runner", "McKinley.ProjectZomboid.Backups.Runner\McKinley.ProjectZomboid.Backups.Runner.csproj", "{E661AF72-FF4E-45B5-BD19-CAB0B774FD60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "McKinley.ProjectZomboid.Backups.Runner", "McKinley.ProjectZomboid.Backups.Runner\McKinley.ProjectZomboid.Backups.Runner.csproj", "{E661AF72-FF4E-45B5-BD19-CAB0B774FD60}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7DB26587-1E3F-440C-915F-3BCE81229415}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
