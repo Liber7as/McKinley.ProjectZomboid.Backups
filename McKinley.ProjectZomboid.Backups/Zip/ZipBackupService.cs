@@ -7,7 +7,7 @@ using McKinley.ProjectZomboid.Backups.Abstractions.Models;
 using McKinley.ProjectZomboid.Backups.Settings;
 using Microsoft.Extensions.Logging;
 
-namespace McKinley.ProjectZomboid.Backups.Zip.Services;
+namespace McKinley.ProjectZomboid.Backups.Zip;
 
 public class ZipBackupService : IZipBackupService
 {

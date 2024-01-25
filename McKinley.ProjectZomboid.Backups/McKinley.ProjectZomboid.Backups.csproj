@@ -14,4 +14,8 @@
     <ProjectReference Include="..\McKinley.ProjectZomboid.Backups.Abstractions\McKinley.ProjectZomboid.Backups.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TarLz\" />
+  </ItemGroup>
+
 </Project>

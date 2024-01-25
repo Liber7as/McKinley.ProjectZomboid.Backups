@@ -1,7 +1,7 @@
 ﻿using System.IO.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions;
 using McKinley.ProjectZomboid.Backups.Settings;
-using McKinley.ProjectZomboid.Backups.Zip.Services;
+using McKinley.ProjectZomboid.Backups.Zip;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
