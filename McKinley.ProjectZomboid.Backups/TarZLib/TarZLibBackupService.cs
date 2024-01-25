@@ -5,7 +5,6 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using McKinley.ProjectZomboid.Backups.Abstractions.Models;
 using McKinley.ProjectZomboid.Backups.Settings;
-using McKinley.ProjectZomboid.Backups.TarLz;
 using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.TarZLib;
