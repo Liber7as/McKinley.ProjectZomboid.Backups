@@ -74,7 +74,7 @@ public class ZipBackupService : IBackupService
         _logger?.LogInformation($"Zip file saved: '{zipFileInfo.FullName}'");
     }
 
-    private async Task CopyDirectoryToZipArchiveAsync(DirectoryInfo directoryInfo, ZipArchive zipArchive)
+    private async Task CopyDirectoryToZipArchiveAsync(IDirectoryInfo directoryInfo, ZipArchive zipArchive)
     {
         // Create a unique timestamp for the backup
         var uniqueDateString = DateTime.UtcNow.ToString("s")

@@ -1,5 +1,4 @@
 ﻿using CommandLine;
-using McKinley.ProjectZomboid.Backups.Abstractions;
 using McKinley.ProjectZomboid.Backups.Zip.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,21 +16,19 @@ public static class Program
             return -1;
         }
 
-        var serviceProvider = ConfigureServices(settings);
+        await using var serviceProvider = ConfigureServices(settings);
 
-        var saveService = serviceProvider.GetRequiredService<ISaveService>();
-        var backupService = serviceProvider.GetRequiredService<IBackupService>();
+        var backupJob = serviceProvider.GetRequiredService<BackupJob>();
 
-        foreach (var save in await saveService.GetAsync(new DirectoryInfo(settings.SaveDirectory)))
-        {
-            await backupService.BackupAsync(save);
-        }
-
-        return 0;
+        return await backupJob.RunAsync();
     }
 
     private static ServiceProvider ConfigureServices(RunnerSettings settings)
     {
+        var services = new ServiceCollection();
+
+        services.AddSingleton(settings);
+
         var zipBackupSettings = new ZipBackupSettings();
 
         if (!string.IsNullOrWhiteSpace(settings.BackupZipFileLocation))
@@ -39,7 +36,6 @@ public static class Program
             zipBackupSettings.FileLocation = settings.BackupZipFileLocation;
         }
 
-        var services = new ServiceCollection();
         services.AddZipBackups(zipBackupSettings);
 
         services.AddLogging(loggingBuilder =>
@@ -52,7 +48,7 @@ public static class Program
         return services.BuildServiceProvider();
     }
 
-    private static RunnerSettings? ParseSettings(string[] args)
+    private static RunnerSettings? ParseSettings(IEnumerable<string> args)
     {
         var parsedArgumentsResult = Parser.Default.ParseArguments<RunnerSettings>(args);
 

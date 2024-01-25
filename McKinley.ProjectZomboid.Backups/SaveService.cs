@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using McKinley.ProjectZomboid.Backups.Abstractions;
@@ -22,7 +23,7 @@ public class SaveService : ISaveService
         _logger = logger;
     }
 
-    public Task<IEnumerable<Save>> GetAsync(DirectoryInfo saveDirectory)
+    public Task<IEnumerable<Save>> GetAsync(IDirectoryInfo saveDirectory)
     {
         _logger?.LogInformation($"Reading saves from '{saveDirectory.FullName}'");
 

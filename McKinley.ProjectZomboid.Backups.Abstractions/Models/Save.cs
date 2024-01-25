@@ -1,15 +1,15 @@
-﻿using System.IO;
+﻿using System.IO.Abstractions;
 
 namespace McKinley.ProjectZomboid.Backups.Abstractions.Models;
 
 public class Save
 {
-    public Save(DirectoryInfo directory)
+    public Save(IDirectoryInfo directory)
     {
         Directory = directory;
     }
 
-    public DirectoryInfo Directory { get; }
+    public IDirectoryInfo Directory { get; }
 
     public string Name => Directory.Name;
 }
