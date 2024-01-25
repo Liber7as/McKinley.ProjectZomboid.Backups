@@ -50,7 +50,9 @@ public class BackupJob
     {
         var directory = _fileSystem.DirectoryInfo.New(!string.IsNullOrWhiteSpace(_settings.SaveDirectory)
                                                           ? _settings.SaveDirectory // If the user provided a save directory, we can use that.
-                                                          : @"%USERPROFILE%\Zomboid\Saves\Sandbox"); // Attempt to locate the save directory
+                                                          : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"Zomboid\Saves\Sandbox")); // Attempt to locate the save directory
+
+        _logger?.LogInformation($"Project Zomboid save directory: '{directory.FullName}'");
 
         // If the save directory doesn't exist, return null to indicate it could not be found.
         return !directory.Exists
