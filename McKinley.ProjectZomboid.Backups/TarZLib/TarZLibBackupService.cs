@@ -30,25 +30,14 @@ public class TarZLibBackupService : BaseBackupService,
                                     ? $"Found backup tar/zlib file: '{destination.FullName}'"
                                     : $"Backup tar/zlib file not found. Will create: '{destination.FullName}'");
 
-        // TODO: This will overwrite the entire file. We should create a temporary file, transfer the contents to it, then append any new backups.
-
-        await using Stream tarZLibStream = destination.Exists
-                                               ? destination.Open(FileMode.Open, FileAccess.Write)
-                                               : destination.Create();
-
-        await using (var lzWriter = new ZLibStream(tarZLibStream, _settings.CompressionLevel, true))
-        await using (var tarWriter = new TarWriter(lzWriter, TarEntryFormat.Pax, true))
+        await using (var tarWriter = await CreateTarZLibWriterAsync(destination))
         {
             await EnumerateFilesAsync(save.Directory, (entryName, fileInfo) => CopyFileToTarArchiveAsync(tarWriter, entryName, fileInfo));
 
             _logger?.LogInformation("Completed file backup.");
 
             _logger?.LogInformation($"Saving tar/zlib file: '{destination.FullName}'");
-
-            await lzWriter.FlushAsync();
         }
-
-        await tarZLibStream.FlushAsync();
 
         _logger?.LogInformation($"Tar/zlib file saved: '{destination.FullName}'");
     }
@@ -63,5 +52,53 @@ public class TarZLibBackupService : BaseBackupService,
         _logger?.LogDebug($"'{fileInfo.FullName}' -> '{entry.Name}'");
 
         return tarWriter.WriteEntryAsync(entry);
+    }
+
+    private async Task<TarWriter> CreateTarZLibWriterAsync(IFileInfo destination)
+    {
+        // If the destination doesn't exist, we can create it from scratch:
+        if (!destination.Exists)
+        {
+            return CreateTarZLibWriter(destination.Create());
+        }
+
+        // If the destination exists
+
+        // Create a temporary file
+        var temporaryFileInfo = destination.FileSystem.FileInfo.New(destination.FullName + ".tmp");
+
+        // Copy the existing backup to the temporary file
+        destination.CopyTo(temporaryFileInfo.FullName, true);
+
+        // Overwrite the existing backup
+        var tarWriter = CreateTarZLibWriter(destination.Create());
+
+        // Copy the temporary file to the new backup
+        await using var content = temporaryFileInfo.OpenRead();
+        await using var tarReader = CreateTarZLibReader(content);
+        TarEntry? entry;
+        while ((entry = await tarReader.GetNextEntryAsync()) != null)
+        {
+            await tarWriter.WriteEntryAsync(entry);
+        }
+
+        // Return the new backup writer
+        return tarWriter;
+    }
+
+    private TarReader CreateTarZLibReader(Stream input, bool leaveOpen = false)
+    {
+        var zlibReader = new ZLibStream(input, _settings.CompressionLevel, leaveOpen);
+        var tarReader = new TarReader(zlibReader);
+
+        return tarReader;
+    }
+
+    private TarWriter CreateTarZLibWriter(Stream output, bool leaveOpen = false)
+    {
+        var zlibWriter = new ZLibStream(output, _settings.CompressionLevel, leaveOpen);
+        var tarWriter = new TarWriter(zlibWriter, false);
+
+        return tarWriter;
     }
 }
