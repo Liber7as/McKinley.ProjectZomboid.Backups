@@ -1,0 +1,48 @@
+VERSION = 1,
+
+mods
+{
+	mod = modoptions,
+	mod = BLTRandomZombies,
+	mod = AutoMechanics,
+	mod = AutoSewing,
+	mod = Diederiks Tile Palooza,
+	mod = Dirkerdam,
+	mod = tkTiles_01,
+	mod = PertsPartyTiles,
+	mod = DylansTiles,
+	mod = BetterSortCC,
+	mod = autotsartrailers,
+	mod = tsarslib,
+	mod = RavenCreek,
+	mod = ChangeSandBox,
+	mod = ManySpawnsAll,
+	mod = ManySpawnsLocation,
+	mod = ManySpawnsLouisville,
+	mod = ManySpawnsProfession,
+	mod = ManySpawnsLouisvilleByNeighborhood,
+	mod = ManySpawnsAnywhereBut,
+	mod = 78amgeneralM35A2,
+	mod = 78amgeneralM49A2C,
+	mod = 78amgeneralM50A3,
+	mod = 78amgeneralM62,
+	mod = 82oshkoshM911,
+	mod = 83amgeneralM923,
+	mod = 86oshkoshP19A,
+	mod = 92amgeneralM998,
+	mod = ManySpawns,
+	mod = ManySpawnsMP,
+	mod = ManySpawnsVariations,
+	mod = RV_Interior_MP,
+	mod = RV_Interior_Vanilla,
+	mod = RainWash,
+	mod = TheStar,
+	mod = Arsenal(26)GunFighter[MAIN MOD 2.0],
+	mod = Brita_2,
+	mod = Brita,
+	mod = isoContainers,
+}
+
+maps
+{
+}

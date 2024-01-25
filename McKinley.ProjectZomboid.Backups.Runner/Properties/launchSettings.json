@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "McKinley.ProjectZomboid.Backups.Runner": {
+      "commandName": "Project",
+      "commandLineArgs": "-d \"C:\\Users\\Jon\\source\\repos\\Personal\\McKinley.ProjectZomboid.Backups\\McKinley.ProjectZomboid.Backups.Tests\\Saves\" --log-level Debug"
+    }
+  }
+}
