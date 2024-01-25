@@ -1,8 +1,8 @@
 ﻿using System.IO.Compression;
 
-namespace McKinley.ProjectZomboid.Backups.Zip.Settings;
+namespace McKinley.ProjectZomboid.Backups.Settings;
 
-public class ZipBackupSettings
+public class BackupSettings
 {
     public string BackupNameFormat { get; set; } = "{0}-Backup-{1}";
 

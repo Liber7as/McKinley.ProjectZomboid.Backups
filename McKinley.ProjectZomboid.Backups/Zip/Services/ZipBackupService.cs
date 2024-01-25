@@ -3,19 +3,18 @@ using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using McKinley.ProjectZomboid.Backups.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions.Models;
-using McKinley.ProjectZomboid.Backups.Zip.Settings;
+using McKinley.ProjectZomboid.Backups.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.Zip.Services;
 
-public class ZipBackupService : IBackupService
+public class ZipBackupService : IZipBackupService
 {
-    private readonly ZipBackupSettings _settings;
     private readonly ILogger<ZipBackupService>? _logger;
+    private readonly BackupSettings _settings;
 
-    public ZipBackupService(ZipBackupSettings settings, ILogger<ZipBackupService>? logger = null)
+    public ZipBackupService(BackupSettings settings, ILogger<ZipBackupService>? logger = null)
     {
         _settings = settings;
         _logger = logger;
@@ -26,7 +25,9 @@ public class ZipBackupService : IBackupService
         _logger?.LogInformation($"Backing up save: '{save.Directory.FullName}'");
 
         // Check to see if the ZIP file already exists
-        _logger?.LogInformation(destination.Exists ? $"Found backup zip file: '{destination.FullName}'" : $"Backup zip file not found. Will create: '{destination.FullName}'");
+        _logger?.LogInformation(destination.Exists
+                                    ? $"Found backup zip file: '{destination.FullName}'"
+                                    : $"Backup zip file not found. Will create: '{destination.FullName}'");
 
         // Open the ZIP file as a stream, or create a MemoryStream for a new ZIP file. 
         await using Stream zipFileStream = destination.Exists

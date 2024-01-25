@@ -1,5 +1,5 @@
 ﻿using CommandLine;
-using McKinley.ProjectZomboid.Backups.Zip.Settings;
+using McKinley.ProjectZomboid.Backups.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -26,16 +26,10 @@ public static class Program
     private static ServiceProvider ConfigureServices(RunnerSettings settings)
     {
         var services = new ServiceCollection();
-        var zipBackupSettings = new ZipBackupSettings();
-
-        if (!string.IsNullOrWhiteSpace(settings.BackupZipFileLocation))
-        {
-            zipBackupSettings.FileLocation = settings.BackupZipFileLocation;
-        }
 
         services.AddSingleton(settings);
         services.AddScoped<BackupJob>();
-        services.AddZipBackups(zipBackupSettings);
+        services.AddZipBackups();
         services.AddLogging(loggingBuilder =>
                             {
                                 loggingBuilder.ClearProviders();

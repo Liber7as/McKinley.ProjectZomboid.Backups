@@ -1,7 +1,7 @@
 ﻿using System.IO.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions;
+using McKinley.ProjectZomboid.Backups.Settings;
 using McKinley.ProjectZomboid.Backups.Zip.Services;
-using McKinley.ProjectZomboid.Backups.Zip.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -22,14 +22,14 @@ public class ZipBackupServiceFixture
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-        _settings = serviceProvider.GetRequiredService<ZipBackupSettings>();
+        _settings = serviceProvider.GetRequiredService<BackupSettings>();
         _saveService = (SaveService) serviceProvider.GetRequiredService<ISaveService>();
         _backupService = (ZipBackupService) serviceProvider.GetRequiredService<IBackupService>();
     }
 
     private ZipBackupService _backupService = null!;
     private SaveService _saveService = null!;
-    private ZipBackupSettings _settings = null!;
+    private BackupSettings _settings = null!;
     private IFileSystem _fileSystem = null!;
 
     [Test]
