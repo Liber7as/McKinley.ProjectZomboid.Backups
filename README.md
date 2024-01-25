@@ -8,6 +8,10 @@ Future plans/research:
 
 ## Requirements
 
+All releases are built for x64 Windows machines. They are self contained and single file, therefore no dependencies are required.
+
+## Development Requirements
+
 This project was written in .NET 8, which requires the [.NET SDK](https://dotnet.microsoft.com/en-us/download).
 
 ## How to use
