@@ -1,4 +1,5 @@
-﻿using McKinley.ProjectZomboid.Backups.Abstractions;
+﻿using System.IO.Abstractions;
+using McKinley.ProjectZomboid.Backups.Abstractions;
 using McKinley.ProjectZomboid.Backups.Zip.Services;
 using McKinley.ProjectZomboid.Backups.Zip.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public class ZipBackupServiceFixture
         serviceCollection.AddZipBackups();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
+        _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
         _settings = serviceProvider.GetRequiredService<ZipBackupSettings>();
         _saveService = (SaveService) serviceProvider.GetRequiredService<ISaveService>();
         _backupService = (ZipBackupService) serviceProvider.GetRequiredService<IBackupService>();
@@ -28,12 +30,13 @@ public class ZipBackupServiceFixture
     private ZipBackupService _backupService = null!;
     private SaveService _saveService = null!;
     private ZipBackupSettings _settings = null!;
+    private IFileSystem _fileSystem = null!;
 
     [Test]
     public async Task BackupAsync()
     {
         // Ensure the backup file is deleted
-        var backupFileInfo = new FileInfo(_settings.FileLocation);
+        var backupFileInfo = _fileSystem.FileInfo.New("ProjectZomboid-Backups.zip");
 
         if (backupFileInfo.Exists)
         {
@@ -42,7 +45,7 @@ public class ZipBackupServiceFixture
 
         foreach (var save in await _saveService.GetAsync(TestHelper.SaveDirectory))
         {
-            await _backupService.BackupAsync(save);
+            await _backupService.BackupAsync(save, backupFileInfo);
         }
 
         // TODO: Ensure everything is created
@@ -52,7 +55,7 @@ public class ZipBackupServiceFixture
     public async Task BackupMultipleAsync()
     {
         // Ensure the backup file is deleted
-        var backupFileInfo = new FileInfo(_settings.FileLocation);
+        var backupFileInfo = _fileSystem.FileInfo.New("ProjectZomboid-Backups.zip");
 
         if (backupFileInfo.Exists)
         {
@@ -63,12 +66,12 @@ public class ZipBackupServiceFixture
 
         foreach (var save in await _saveService.GetAsync(TestHelper.SaveDirectory))
         {
-            await _backupService.BackupAsync(save);
+            await _backupService.BackupAsync(save, backupFileInfo);
         }
 
         foreach (var save in await _saveService.GetAsync(TestHelper.SaveDirectory))
         {
-            await _backupService.BackupAsync(save);
+            await _backupService.BackupAsync(save, backupFileInfo);
         }
 
         // TODO: Ensure everything is created
