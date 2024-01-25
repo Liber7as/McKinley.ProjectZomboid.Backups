@@ -74,6 +74,7 @@ public class TarZLibBackupService : BaseBackupService,
         var tarWriter = CreateTarZLibWriter(destination.Create());
 
         // Copy the temporary file to the new backup
+        // TODO: This is broken, since the underlying ZLibStream is not seekable.
         await using var content = temporaryFileInfo.OpenRead();
         await using var tarReader = CreateTarZLibReader(content);
         TarEntry? entry;
