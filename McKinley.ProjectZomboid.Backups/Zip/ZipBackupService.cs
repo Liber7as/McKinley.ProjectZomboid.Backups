@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Threading.Tasks;
@@ -9,12 +8,14 @@ using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.Zip;
 
-public class ZipBackupService : IZipBackupService
+public class ZipBackupService : BaseBackupService,
+                                IZipBackupService
 {
     private readonly ILogger<ZipBackupService>? _logger;
     private readonly BackupSettings _settings;
 
     public ZipBackupService(BackupSettings settings, ILogger<ZipBackupService>? logger = null)
+        : base(settings)
     {
         _settings = settings;
         _logger = logger;
@@ -44,7 +45,7 @@ public class ZipBackupService : IZipBackupService
         // Create a zip archive from the stream above, and copy the save to it.
         using (var zipArchive = new ZipArchive(zipFileStream, zipArchiveMode, true))
         {
-            await CopyDirectoryToZipArchiveAsync(save.Directory, zipArchive);
+            await EnumerateFilesAsync(save.Directory, (entryName, fileInfo) => CopyFileToZipArchiveAsync(zipArchive, entryName, fileInfo));
 
             _logger?.LogInformation("Completed file backup.");
 
@@ -71,41 +72,21 @@ public class ZipBackupService : IZipBackupService
         _logger?.LogInformation($"Zip file saved: '{destination.FullName}'");
     }
 
-    private async Task CopyDirectoryToZipArchiveAsync(IDirectoryInfo directoryInfo, ZipArchive zipArchive)
+    private async Task CopyFileToZipArchiveAsync(ZipArchive zipArchive, string entryName, IFileInfo fileInfo)
     {
-        // Create a unique timestamp for the backup
-        var uniqueDateString = DateTime.UtcNow.ToString("s")
-                                       .Replace(":", string.Empty)
-                                       .Replace("-", string.Empty)
-                                       .Replace("T", string.Empty);
+        var entry = zipArchive.CreateEntry(entryName, _settings.CompressionLevel);
 
-        // Create a folder name for the ZIP file backup
-        var folderName = string.Format(_settings.BackupNameFormat, directoryInfo.Name, uniqueDateString);
+        _logger?.LogDebug($"'{fileInfo.FullName}' -> '{entry.FullName}'");
 
-        // Enumerate all the files in the save
-        foreach (var file in directoryInfo.GetFiles("*", SearchOption.AllDirectories))
-        {
-            // Create a relative path for the file being imported into the ZIP file
-            var relativeFileName = file.FullName.Replace(directoryInfo.FullName, string.Empty)
-                                       .TrimStart('\\')
-                                       .TrimStart('/');
+        // Open the zip file entry and the file
+        await using var zipEntryStream = entry.Open();
+        await using var fileStream = fileInfo.OpenRead();
 
-            // Create an entry inside the backup folder for the file
-            var entryPath = Path.Combine(folderName, relativeFileName);
-            var entry = zipArchive.CreateEntry(entryPath, _settings.CompressionLevel);
+        // Copy the file to the ZIP archive
+        await fileStream.CopyToAsync(zipEntryStream);
 
-            _logger?.LogDebug($"'{file.FullName}' -> '{entry.FullName}'");
-
-            // Open the zip file entry and the file
-            await using var zipEntryStream = entry.Open();
-            await using var fileStream = file.OpenRead();
-
-            // Copy the file to the ZIP archive
-            await fileStream.CopyToAsync(zipEntryStream);
-
-            // Flush to ensure everything is sent
-            await fileStream.FlushAsync();
-            await zipEntryStream.FlushAsync();
-        }
+        // Flush to ensure everything is sent
+        await fileStream.FlushAsync();
+        await zipEntryStream.FlushAsync();
     }
 }
