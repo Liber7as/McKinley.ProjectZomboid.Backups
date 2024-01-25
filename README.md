@@ -3,7 +3,7 @@ This is a personal project which handles backing up Project Zomboid saves into a
 Future plans/research:
 
 - A GUI for managing backups.
-- Better compression algorithm?? (maybe, ZIP does a good job here)
+- Better compression algorithm, or a choice between compression algorithms?? (maybe, ZIP does a good job here)
 - Run on a schedule, detect when a Project Zomboid save is no longer file-locked, then back it up. (Not sure if this is possible yet)
 
 ## Requirements
