@@ -86,19 +86,19 @@ public class TarZLibBackupService : BaseBackupService,
         return tarWriter;
     }
 
-    private TarReader CreateTarZLibReader(Stream input, bool leaveOpen = false)
-    {
-        var zlibReader = new ZLibStream(input, _settings.CompressionLevel, leaveOpen);
-        var tarReader = new TarReader(zlibReader);
-
-        return tarReader;
-    }
-
     private TarWriter CreateTarZLibWriter(Stream output, bool leaveOpen = false)
     {
         var zlibWriter = new ZLibStream(output, _settings.CompressionLevel, leaveOpen);
         var tarWriter = new TarWriter(zlibWriter, false);
 
         return tarWriter;
+    }
+
+    private static TarReader CreateTarZLibReader(Stream input, bool leaveOpen = false)
+    {
+        var zlibReader = new ZLibStream(input, CompressionMode.Decompress, leaveOpen);
+        var tarReader = new TarReader(zlibReader);
+
+        return tarReader;
     }
 }
