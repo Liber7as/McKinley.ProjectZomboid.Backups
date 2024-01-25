@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO.Abstractions;
+using System.Threading.Tasks;
 using McKinley.ProjectZomboid.Backups.Abstractions.Models;
 
 namespace McKinley.ProjectZomboid.Backups.Abstractions;
 
 public interface IBackupService
 {
-    Task BackupAsync(Save save);
+    Task BackupAsync(Save save, IFileInfo destination);
 }

@@ -12,33 +12,29 @@ namespace McKinley.ProjectZomboid.Backups.Zip.Services;
 
 public class ZipBackupService : IBackupService
 {
-    private readonly IFileSystem _fileSystem;
     private readonly ZipBackupSettings _settings;
     private readonly ILogger<ZipBackupService>? _logger;
 
-    public ZipBackupService(IFileSystem fileSystem, ZipBackupSettings settings, ILogger<ZipBackupService>? logger = null)
+    public ZipBackupService(ZipBackupSettings settings, ILogger<ZipBackupService>? logger = null)
     {
-        _fileSystem = fileSystem;
         _settings = settings;
         _logger = logger;
     }
 
-    public async Task BackupAsync(Save save)
+    public async Task BackupAsync(Save save, IFileInfo destination)
     {
         _logger?.LogInformation($"Backing up save: '{save.Directory.FullName}'");
 
         // Check to see if the ZIP file already exists
-        var zipFileInfo = _fileSystem.FileInfo.New(_settings.FileLocation);
-
-        _logger?.LogInformation(zipFileInfo.Exists ? $"Found backup zip file: '{zipFileInfo.FullName}'" : $"Backup zip file not found. Will create: '{zipFileInfo.FullName}'");
+        _logger?.LogInformation(destination.Exists ? $"Found backup zip file: '{destination.FullName}'" : $"Backup zip file not found. Will create: '{destination.FullName}'");
 
         // Open the ZIP file as a stream, or create a MemoryStream for a new ZIP file. 
-        await using Stream zipFileStream = zipFileInfo.Exists
-                                               ? _fileSystem.File.Open(zipFileInfo.FullName, FileMode.Open, FileAccess.ReadWrite)
+        await using Stream zipFileStream = destination.Exists
+                                               ? destination.Open(FileMode.Open, FileAccess.ReadWrite)
                                                : new MemoryStream();
 
         // Determine if we should create or update a ZIP file.
-        var zipArchiveMode = zipFileInfo.Exists
+        var zipArchiveMode = destination.Exists
                                  ? ZipArchiveMode.Update
                                  : ZipArchiveMode.Create;
 
@@ -51,14 +47,14 @@ public class ZipBackupService : IBackupService
 
             _logger?.LogInformation("Completed file backup.");
 
-            _logger?.LogInformation($"Saving zip file: '{zipFileInfo.FullName}'");
+            _logger?.LogInformation($"Saving zip file: '{destination.FullName}'");
         }
 
         // If the zip archive doesn't exist, save it to the file system.
-        if (!zipFileInfo.Exists)
+        if (!destination.Exists)
         {
             // Open a new file
-            await using var saveStream = zipFileInfo.Create();
+            await using var saveStream = destination.Create();
 
             // Ensure the zip file stream is set to the beginning, so we can copy it
             zipFileStream.Seek(0, SeekOrigin.Begin);
@@ -71,7 +67,7 @@ public class ZipBackupService : IBackupService
             await saveStream.FlushAsync();
         }
 
-        _logger?.LogInformation($"Zip file saved: '{zipFileInfo.FullName}'");
+        _logger?.LogInformation($"Zip file saved: '{destination.FullName}'");
     }
 
     private async Task CopyDirectoryToZipArchiveAsync(IDirectoryInfo directoryInfo, ZipArchive zipArchive)
