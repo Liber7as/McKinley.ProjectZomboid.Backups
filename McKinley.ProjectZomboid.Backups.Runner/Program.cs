@@ -26,9 +26,6 @@ public static class Program
     private static ServiceProvider ConfigureServices(RunnerSettings settings)
     {
         var services = new ServiceCollection();
-
-        services.AddSingleton(settings);
-
         var zipBackupSettings = new ZipBackupSettings();
 
         if (!string.IsNullOrWhiteSpace(settings.BackupZipFileLocation))
@@ -36,8 +33,9 @@ public static class Program
             zipBackupSettings.FileLocation = settings.BackupZipFileLocation;
         }
 
+        services.AddSingleton(settings);
+        services.AddScoped<BackupJob>();
         services.AddZipBackups(zipBackupSettings);
-
         services.AddLogging(loggingBuilder =>
                             {
                                 loggingBuilder.ClearProviders();
