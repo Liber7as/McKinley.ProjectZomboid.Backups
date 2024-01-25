@@ -33,7 +33,7 @@ public class ZipBackupService : BaseBackupService,
         // Open the ZIP file as a stream, or create a MemoryStream for a new ZIP file. 
         await using Stream zipFileStream = destination.Exists
                                                ? destination.Open(FileMode.Open, FileAccess.ReadWrite)
-                                               : new MemoryStream();
+                                               : destination.Create();
 
         // Determine if we should create or update a ZIP file.
         var zipArchiveMode = destination.Exists
@@ -52,22 +52,7 @@ public class ZipBackupService : BaseBackupService,
             _logger?.LogInformation($"Saving zip file: '{destination.FullName}'");
         }
 
-        // If the zip archive doesn't exist, save it to the file system.
-        if (!destination.Exists)
-        {
-            // Open a new file
-            await using var saveStream = destination.Create();
-
-            // Ensure the zip file stream is set to the beginning, so we can copy it
-            zipFileStream.Seek(0, SeekOrigin.Begin);
-
-            // Copy the zip file to the file system
-            await zipFileStream.CopyToAsync(saveStream);
-
-            // Flush to ensure everything is sent
-            await zipFileStream.FlushAsync();
-            await saveStream.FlushAsync();
-        }
+        await zipFileStream.FlushAsync();
 
         _logger?.LogInformation($"Zip file saved: '{destination.FullName}'");
     }
