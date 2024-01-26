@@ -15,4 +15,27 @@ This project was written in .NET 8, which requires the [.NET SDK](https://dotnet
 
 ## How to use
 
-A guide on how to use this will be constructed later. For now, check out the `McKinley.ProjectZomboid.Backups.Runner` release.
+Powershell: `.\McKinley.ProjectZomboid.Backups.Runner.exe --help`
+
+CMD: `McKinley.ProjectZomboid.Backups.Runner.exe --help`
+
+```
+  -t, --type              Backup file type. Zip and TarZLib are supported.
+
+  -o, --output            Backup output folder. By default the current directory will be used.
+
+  -s, --save-directory    Project Zomboid Saves Directory. If not provided, it will try to detect your default Project
+                          Zomboid saves directory (ex: %USERPROFILE%\Zomboid\Saves\Sandbox).
+
+  --save-name             Only back up this save, ignores all others.
+
+  --log-level             The log level to output to the console.
+
+  --zip-filename          Zip backup file name
+
+  --compression-level     Compression Level (Optimal/Fastest/NoCompression/SmallestSize). The default is Optimal.
+
+  --help                  Display this help screen.
+
+  --version               Display version information.
+```
