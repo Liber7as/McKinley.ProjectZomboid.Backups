@@ -37,11 +37,19 @@ public class BackupJob
             return -1;
         }
 
-        var saves = await _saveService.GetAsync(saveDirectory);
+        var saves = (await _saveService.GetAsync(saveDirectory)).ToArray();
+
+        if (_settings.SaveName != null)
+        {
+            _logger?.LogInformation($"Finding saves with name '{_settings.SaveName}'");
+
+            saves = saves.Where(save => string.Equals(save.Name, _settings.SaveName, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            _logger?.LogInformation($"Found {saves.Length} saves with name '{_settings.SaveName}'");
+        }
 
         foreach (var save in saves)
         {
-
             switch (_settings.BackupType)
             {
                 case BackupType.Zip:

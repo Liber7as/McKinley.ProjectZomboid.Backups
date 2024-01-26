@@ -14,6 +14,9 @@ public class RunnerSettings
     [Option('s', "save-directory", HelpText = "Project Zomboid Saves Directory. If not provided, it will try to detect your default Project Zomboid saves directory (ex: %USERPROFILE%\\Zomboid\\Saves\\Sandbox).")]
     public string SaveDirectory { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"Zomboid\Saves\Sandbox");
 
+    [Option("save-name", HelpText = "Only back up this save, ignores all others.")]
+    public string? SaveName { get; set; }
+
     [Option("log-level", Default = LogLevel.Information, HelpText = "The log level to output to the console.")]
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
