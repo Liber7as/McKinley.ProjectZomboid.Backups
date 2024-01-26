@@ -8,21 +8,21 @@ public static class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        var settings = ParseSettings(args);
+        var parsedArgs = ParseArguments(args);
 
-        if (settings == null)
+        if (parsedArgs == null)
         {
             return -1;
         }
 
-        await using var serviceProvider = ConfigureServices(settings);
+        await using var serviceProvider = ConfigureServices(parsedArgs);
 
         var backupJob = serviceProvider.GetRequiredService<BackupJob>();
 
-        return await backupJob.RunAsync();
+        return await backupJob.RunAsync(parsedArgs);
     }
 
-    private static ServiceProvider ConfigureServices(RunnerSettings settings)
+    private static ServiceProvider ConfigureServices(CommandLineArgumentsModel settings)
     {
         var services = new ServiceCollection();
 
@@ -48,11 +48,11 @@ public static class Program
         return services.BuildServiceProvider();
     }
 
-    private static RunnerSettings? ParseSettings(IEnumerable<string> args)
+    private static CommandLineArgumentsModel? ParseArguments(IEnumerable<string> args)
     {
         using var parser = new Parser();
 
-        var parsedArgumentsResult = parser.ParseArguments<RunnerSettings>(args);
+        var parsedArgumentsResult = parser.ParseArguments<CommandLineArgumentsModel>(args);
 
         if (!parsedArgumentsResult.Errors.Any())
         {

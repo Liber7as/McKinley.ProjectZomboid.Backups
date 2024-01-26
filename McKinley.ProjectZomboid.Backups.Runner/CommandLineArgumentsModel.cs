@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.Runner;
 
-public class RunnerSettings
+public class CommandLineArgumentsModel
 {
     [Option('t', "type", HelpText = "Backup file type. Zip and TarZLib are supported.")]
     public BackupType BackupType { get; set; } = BackupType.Zip;

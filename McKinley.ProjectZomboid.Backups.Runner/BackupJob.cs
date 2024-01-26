@@ -11,22 +11,19 @@ public class BackupJob
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<BackupJob>? _logger;
     private readonly ISaveService _saveService;
-    private readonly RunnerSettings _settings;
 
     public BackupJob(ISaveService saveService,
                      IBackupService backupService,
                      IFileSystem fileSystem,
-                     RunnerSettings settings,
                      ILogger<BackupJob>? logger = null)
     {
         _saveService = saveService;
         _backupService = backupService;
         _fileSystem = fileSystem;
-        _settings = settings;
         _logger = logger;
     }
 
-    public async Task<int> RunAsync()
+    public async Task<int> RunAsync(CommandLineArgumentsModel args)
     {
         var saveDirectory = GetSaveDirectory();
 
@@ -39,18 +36,18 @@ public class BackupJob
 
         var saves = (await _saveService.GetAsync(saveDirectory)).ToArray();
 
-        if (_settings.SaveName != null)
+        if (args.SaveName != null)
         {
-            _logger?.LogInformation($"Finding saves with name '{_settings.SaveName}'");
+            _logger?.LogInformation($"Finding saves with name '{args.SaveName}'");
 
-            saves = saves.Where(save => string.Equals(save.Name, _settings.SaveName, StringComparison.OrdinalIgnoreCase)).ToArray();
+            saves = saves.Where(save => string.Equals(save.Name, args.SaveName, StringComparison.OrdinalIgnoreCase)).ToArray();
 
-            _logger?.LogInformation($"Found {saves.Length} saves with name '{_settings.SaveName}'");
+            _logger?.LogInformation($"Found {saves.Length} saves with name '{args.SaveName}'");
         }
 
         foreach (var save in saves)
         {
-            switch (_settings.BackupType)
+            switch (args.BackupType)
             {
                 case BackupType.Zip:
                     await ZipBackup(save);
