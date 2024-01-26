@@ -20,18 +20,19 @@ Powershell: `.\McKinley.ProjectZomboid.Backups.Runner.exe --help`
 CMD: `McKinley.ProjectZomboid.Backups.Runner.exe --help`
 
 ```
-  -t, --type              Backup file type. Zip and TarZLib are supported.
+  -t, --type              The backup file type. Zip and TarZLib are supported. The default is Zip
 
-  -o, --output            Backup output folder. By default the current directory will be used.
+  -o, --output            Backup output folder. By default, the current directory will be used.
 
-  -s, --save-directory    Project Zomboid Saves Directory. If not provided, it will try to detect your default Project
+  -s, --save-directory    Project Zomboid Saves Directory. By default, it will try to detect your default Project
                           Zomboid saves directory (ex: %USERPROFILE%\Zomboid\Saves\Sandbox).
 
-  --save-name             Only back up this save, ignores all others.
+  --save-name             Only back up this save, ignores all others. There is no default value.
 
-  --log-level             The log level to output to the console.
+  --log-level             The log level to output to the console (Trace/Debug/Information/Warning/Error/Critical/None).
+                          The default is Information.
 
-  --zip-filename          Zip backup file name
+  --zip-filename          Zip backup file name. The default is ProjectZomboid-Backups.zip
 
   --compression-level     Compression Level (Optimal/Fastest/NoCompression/SmallestSize). The default is Optimal.
 
