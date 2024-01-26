@@ -73,7 +73,7 @@ public class BackupJob
                                       .Replace("-", string.Empty)
                                       .Replace("T", string.Empty);
 
-        var backupFileName = Path.Combine(_settings.OutputFolder, $"{save.Name}-{uniqueTimestamp}.tar.zl");
+        var backupFileName = Path.Combine(_settings.OutputFolder, $"{save.Name}-Backup-{uniqueTimestamp}.tar.zl");
         var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
 
         return _backupService.BackupAsync(save, backupFileInfo);
