@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
+using McKinley.ProjectZomboid.Backups.Abstractions.Models;
 using McKinley.ProjectZomboid.Backups.Settings;
 
 namespace McKinley.ProjectZomboid.Backups;
@@ -18,7 +19,7 @@ public abstract class BaseBackupService
     /// <summary>
     /// Enumerates the files in a directory and creates a unique entry name, then calls the `forEachFileAsync` parameter with the file and the entry name.
     /// </summary>
-    protected async Task EnumerateFilesAsync(IDirectoryInfo directoryInfo, Func<string, IFileInfo, Task> forEachFileAsync)
+    protected async Task EnumerateFilesAsync(Save save, Func<string, SaveFile, Task> forEachFileAsync)
     {
         // Create a unique timestamp for the backup
         var uniqueDateString = DateTime.UtcNow.ToString("s")
@@ -27,18 +28,13 @@ public abstract class BaseBackupService
                                        .Replace("T", string.Empty);
 
         // Create a folder name for the ZIP file backup
-        var folderName = string.Format(_settings.BackupNameFormat, directoryInfo.Name, uniqueDateString);
+        var folderName = string.Format(_settings.BackupNameFormat, save.Name, uniqueDateString);
 
         // Enumerate all the files in the save
-        foreach (var file in directoryInfo.GetFiles("*", SearchOption.AllDirectories))
+        foreach (var file in save.Files)
         {
-            // Create a relative path for the file being imported into the ZIP file
-            var relativeFileName = file.FullName.Replace(directoryInfo.FullName, string.Empty)
-                                       .TrimStart('\\')
-                                       .TrimStart('/');
-
             // Create an entry name for the file
-            var entryPath = Path.Combine(folderName, relativeFileName);
+            var entryPath = Path.Combine(folderName, file.RelativeName);
 
             await forEachFileAsync(entryPath, file);
         }

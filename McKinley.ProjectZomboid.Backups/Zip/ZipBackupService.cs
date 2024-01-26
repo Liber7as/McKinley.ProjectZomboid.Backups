@@ -45,7 +45,7 @@ public class ZipBackupService : BaseBackupService,
         // Create a zip archive from the stream above, and copy the save to it.
         using (var zipArchive = new ZipArchive(zipFileStream, zipArchiveMode, true))
         {
-            await EnumerateFilesAsync(save.Directory, (entryName, fileInfo) => CopyFileToZipArchiveAsync(zipArchive, entryName, fileInfo));
+            await EnumerateFilesAsync(save, (entryName, saveFile) => CopyFileToZipArchiveAsync(zipArchive, entryName, saveFile));
 
             _logger?.LogInformation("Completed file backup.");
 
@@ -57,15 +57,15 @@ public class ZipBackupService : BaseBackupService,
         _logger?.LogInformation($"Zip file saved: '{destination.FullName}'");
     }
 
-    private async Task CopyFileToZipArchiveAsync(ZipArchive zipArchive, string entryName, IFileInfo fileInfo)
+    private async Task CopyFileToZipArchiveAsync(ZipArchive zipArchive, string entryName, SaveFile saveFile)
     {
         var entry = zipArchive.CreateEntry(entryName, _settings.CompressionLevel);
 
-        _logger?.LogDebug($"'{fileInfo.FullName}' -> '{entry.FullName}'");
+        _logger?.LogDebug($"'{saveFile.FullName}' -> '{entry.FullName}'");
 
         // Open the zip file entry and the file
         await using var zipEntryStream = entry.Open();
-        await using var fileStream = fileInfo.OpenRead();
+        await using var fileStream = saveFile.File.OpenRead();
 
         // Copy the file to the ZIP archive
         await fileStream.CopyToAsync(zipEntryStream);
