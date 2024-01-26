@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System.IO.Compression;
+using CommandLine;
 using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.Runner;
@@ -22,4 +23,7 @@ public class CommandLineArgumentsModel
 
     [Option("zip-filename", HelpText = "Zip backup file name")]
     public string ZipFileName { get; set; } = "ProjectZomboid-Backups.zip";
+
+    [Option("compression-level", HelpText = "Compression Level (Optimal/Fastest/NoCompression/SmallestSize). The default is Optimal.")]
+    public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.Optimal;
 }

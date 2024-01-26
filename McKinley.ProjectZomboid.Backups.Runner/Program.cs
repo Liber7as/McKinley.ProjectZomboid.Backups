@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using McKinley.ProjectZomboid.Backups.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -26,16 +27,21 @@ public static class Program
     {
         var services = new ServiceCollection();
 
+        var compressionSettings = new CompressionSettings
+        {
+            CompressionLevel = args.CompressionLevel
+        };
+
         services.AddSingleton(args);
         services.AddScoped<BackupJob>();
 
         switch (args.BackupType)
         {
             case BackupType.Zip:
-                services.AddZipBackups();
+                services.AddZipBackups(compressionSettings);
                 break;
             case BackupType.TarZLib:
-                services.AddTarZLibBackups();
+                services.AddTarZLibBackups(compressionSettings);
                 break;
             default:
                 throw new NotSupportedException("Backup type not supported.");
