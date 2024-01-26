@@ -41,14 +41,18 @@ public static class Program
                 throw new NotSupportedException("Backup type not supported.");
         }
 
-        services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders().AddConsole().AddFilter(logLevel => logLevel >= settings.LogLevel));
+        services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders()
+                                                            .AddConsole()
+                                                            .AddFilter(logLevel => logLevel >= settings.LogLevel));
 
         return services.BuildServiceProvider();
     }
 
     private static RunnerSettings? ParseSettings(IEnumerable<string> args)
     {
-        var parsedArgumentsResult = Parser.Default.ParseArguments<RunnerSettings>(args);
+        using var parser = new Parser();
+
+        var parsedArgumentsResult = parser.ParseArguments<RunnerSettings>(args);
 
         if (!parsedArgumentsResult.Errors.Any())
         {
