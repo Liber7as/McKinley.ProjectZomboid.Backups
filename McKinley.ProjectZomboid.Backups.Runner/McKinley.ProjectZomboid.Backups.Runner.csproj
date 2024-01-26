@@ -5,6 +5,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>1.1.0</Version>
+    <Product>Project Zomboid Backups</Product>
+    <Copyright>Jon McKinley</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
