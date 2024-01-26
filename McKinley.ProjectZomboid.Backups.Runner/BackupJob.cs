@@ -25,7 +25,7 @@ public class BackupJob
 
     public async Task<int> RunAsync(CommandLineArgumentsModel args)
     {
-        var saveDirectory = GetSaveDirectory();
+        var saveDirectory = GetSaveDirectory(args);
 
         if (saveDirectory == null)
         {
@@ -50,10 +50,10 @@ public class BackupJob
             switch (args.BackupType)
             {
                 case BackupType.Zip:
-                    await ZipBackup(save);
+                    await ZipBackup(save, args);
                     break;
                 case BackupType.TarZLib:
-                    await TarZLibBackup(save);
+                    await TarZLibBackup(save, args);
                     break;
                 default:
                     throw new NotSupportedException("Backup type not supported.");
@@ -63,30 +63,30 @@ public class BackupJob
         return 0;
     }
 
-    private Task ZipBackup(Save save)
+    private Task ZipBackup(Save save, CommandLineArgumentsModel args)
     {
-        var backupFileName = Path.Combine(_settings.OutputFolder, _settings.ZipFileName);
+        var backupFileName = Path.Combine(args.OutputFolder, args.ZipFileName);
         var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
 
         return _backupService.BackupAsync(save, backupFileInfo);
     }
 
-    private Task TarZLibBackup(Save save)
+    private Task TarZLibBackup(Save save, CommandLineArgumentsModel args)
     {
         var uniqueTimestamp = DateTime.UtcNow.ToString("s")
                                       .Replace(":", string.Empty)
                                       .Replace("-", string.Empty)
                                       .Replace("T", string.Empty);
 
-        var backupFileName = Path.Combine(_settings.OutputFolder, $"{save.Name}-Backup-{uniqueTimestamp}.tar.zl");
+        var backupFileName = Path.Combine(args.OutputFolder, $"{save.Name}-Backup-{uniqueTimestamp}.tar.zl");
         var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
 
         return _backupService.BackupAsync(save, backupFileInfo);
     }
 
-    private IDirectoryInfo? GetSaveDirectory()
+    private IDirectoryInfo? GetSaveDirectory(CommandLineArgumentsModel args)
     {
-        var directory = _fileSystem.DirectoryInfo.New(_settings.SaveDirectory);
+        var directory = _fileSystem.DirectoryInfo.New(args.SaveDirectory);
 
         _logger?.LogInformation($"Project Zomboid save directory: '{directory.FullName}'");
 
