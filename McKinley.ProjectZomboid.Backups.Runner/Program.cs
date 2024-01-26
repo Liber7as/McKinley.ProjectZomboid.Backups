@@ -35,17 +35,8 @@ public static class Program
         services.AddSingleton(args);
         services.AddScoped<BackupJob>();
 
-        switch (args.BackupType)
-        {
-            case BackupType.Zip:
-                services.AddZipBackups(compressionSettings);
-                break;
-            case BackupType.TarZLib:
-                services.AddTarZLibBackups(compressionSettings);
-                break;
-            default:
-                throw new NotSupportedException("Backup type not supported.");
-        }
+        services.AddZipBackups(compressionSettings);
+        services.AddTarZLibBackups(compressionSettings);
 
         services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders()
                                                             .AddConsole()

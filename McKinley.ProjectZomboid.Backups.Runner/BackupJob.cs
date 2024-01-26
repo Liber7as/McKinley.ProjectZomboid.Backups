@@ -1,24 +1,29 @@
 ﻿using System.IO.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions.Models;
+using McKinley.ProjectZomboid.Backups.TarZLib;
+using McKinley.ProjectZomboid.Backups.Zip;
 using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.Runner;
 
 public class BackupJob
 {
-    private readonly IBackupService _backupService;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<BackupJob>? _logger;
     private readonly ISaveService _saveService;
+    private readonly ITarZLibBackupService _tarZLibBackupService;
+    private readonly IZipBackupService _zipBackupService;
 
     public BackupJob(ISaveService saveService,
-                     IBackupService backupService,
+                     IZipBackupService zipBackupService,
+                     ITarZLibBackupService tarZLibBackupService,
                      IFileSystem fileSystem,
                      ILogger<BackupJob>? logger = null)
     {
         _saveService = saveService;
-        _backupService = backupService;
+        _zipBackupService = zipBackupService;
+        _tarZLibBackupService = tarZLibBackupService;
         _fileSystem = fileSystem;
         _logger = logger;
     }
@@ -40,7 +45,8 @@ public class BackupJob
         {
             _logger?.LogInformation($"Finding saves with name '{args.SaveName}'");
 
-            saves = saves.Where(save => string.Equals(save.Name, args.SaveName, StringComparison.OrdinalIgnoreCase)).ToArray();
+            saves = saves.Where(save => string.Equals(save.Name, args.SaveName, StringComparison.OrdinalIgnoreCase))
+                         .ToArray();
 
             _logger?.LogInformation($"Found {saves.Length} saves with name '{args.SaveName}'");
         }
@@ -68,7 +74,7 @@ public class BackupJob
         var backupFileName = Path.Combine(args.OutputFolder, args.ZipFileName);
         var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
 
-        return _backupService.BackupAsync(save, backupFileInfo);
+        return _zipBackupService.BackupAsync(save, backupFileInfo);
     }
 
     private Task TarZLibBackup(Save save, CommandLineArgumentsModel args)
@@ -81,7 +87,7 @@ public class BackupJob
         var backupFileName = Path.Combine(args.OutputFolder, $"{save.Name}-Backup-{uniqueTimestamp}.tar.zl");
         var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
 
-        return _backupService.BackupAsync(save, backupFileInfo);
+        return _tarZLibBackupService.BackupAsync(save, backupFileInfo);
     }
 
     private IDirectoryInfo? GetSaveDirectory(CommandLineArgumentsModel args)
