@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "McKinley.ProjectZomboid.Backups.Runner": {
+    "Zip": {
       "commandName": "Project",
-      "commandLineArgs": "-d \"C:\\Users\\Jon\\source\\repos\\Personal\\McKinley.ProjectZomboid.Backups\\McKinley.ProjectZomboid.Backups.Tests\\Saves\" --log-level Debug"
+      "commandLineArgs": "-t Zip -s \"..\\..\\..\\..\\McKinley.ProjectZomboid.Backups.Tests\\Saves\""
+    },
+    "TarZLib": {
+      "commandName": "Project",
+      "commandLineArgs": "-t TarZLib -s \"..\\..\\..\\..\\McKinley.ProjectZomboid.Backups.Tests\\Saves\""
     }
   }
 }
