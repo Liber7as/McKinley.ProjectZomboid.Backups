@@ -15,7 +15,7 @@ This project was written in .NET 8, which requires the [.NET SDK](https://dotnet
 
 ## How to use
 
-Running the `McKinley.ProjectZomboid.Backups.Runner.exe` file with no command line arguments will automatically detect your Project Zomboid save files and back them up into a ZIP folder next to the `.exe` file.
+Running the `McKinley.ProjectZomboid.Backups.Runner.exe` file with no command line arguments will automatically detect your Project Zomboid save files and back them up into a ZIP file next to the `.exe`.
 For more advanced usages, see the Advanced Options section below.
 
 ### Advanced Options
