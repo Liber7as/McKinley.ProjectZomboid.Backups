@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Threading.Tasks;
@@ -8,14 +9,12 @@ using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.Zip;
 
-public class ZipBackupService : BaseBackupService,
-                                IZipBackupService
+public class ZipBackupService : IZipBackupService
 {
     private readonly ILogger<ZipBackupService>? _logger;
     private readonly BackupSettings _settings;
 
     public ZipBackupService(BackupSettings settings, ILogger<ZipBackupService>? logger = null)
-        : base(settings)
     {
         _settings = settings;
         _logger = logger;
@@ -45,7 +44,23 @@ public class ZipBackupService : BaseBackupService,
         // Create a zip archive from the stream above, and copy the save to it.
         using (var zipArchive = new ZipArchive(zipFileStream, zipArchiveMode, true))
         {
-            await EnumerateFilesAsync(save, (entryName, saveFile) => CopyFileToZipArchiveAsync(zipArchive, entryName, saveFile));
+            // Create a unique timestamp for the backup
+            var uniqueDateString = DateTime.UtcNow.ToString("s")
+                                           .Replace(":", string.Empty)
+                                           .Replace("-", string.Empty)
+                                           .Replace("T", string.Empty);
+
+            // Create a folder name for inside the ZIP file backup
+            var entryPrefix = $"{save.Name}-Backup-{uniqueDateString}";
+
+            // Enumerate all the files in the save
+            foreach (var saveFile in save.Files)
+            {
+                // Create an entry name for the file
+                var entryName = Path.Combine(entryPrefix, saveFile.RelativeName);
+
+                await CopyFileToZipArchiveAsync(zipArchive, entryName, saveFile);
+            }
 
             _logger?.LogInformation($"Saving zip file: '{destination.FullName}'");
         }
