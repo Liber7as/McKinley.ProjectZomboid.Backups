@@ -28,13 +28,20 @@ public static class Program
 
         services.AddSingleton(settings);
         services.AddScoped<BackupJob>();
-        services.AddZipBackups();
-        services.AddLogging(loggingBuilder =>
-                            {
-                                loggingBuilder.ClearProviders();
-                                loggingBuilder.AddConsole();
-                                loggingBuilder.AddFilter(logLevel => logLevel >= settings.LogLevel);
-                            });
+
+        switch (settings.BackupType)
+        {
+            case BackupType.Zip:
+                services.AddZipBackups();
+                break;
+            case BackupType.TarZLib:
+                services.AddTarZLibBackups();
+                break;
+            default:
+                throw new NotSupportedException("Backup type not supported.");
+        }
+
+        services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders().AddConsole().AddFilter(logLevel => logLevel >= settings.LogLevel));
 
         return services.BuildServiceProvider();
     }

@@ -1,5 +1,6 @@
 ﻿using System.IO.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions;
+using McKinley.ProjectZomboid.Backups.Abstractions.Models;
 using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.Runner;
@@ -40,17 +41,47 @@ public class BackupJob
 
         foreach (var save in saves)
         {
-            await _backupService.BackupAsync(save, _fileSystem.FileInfo.New(_settings.BackupZipFileLocation));
+
+            switch (_settings.BackupType)
+            {
+                case BackupType.Zip:
+                    await ZipBackup(save);
+                    break;
+                case BackupType.TarZLib:
+                    await TarZLibBackup(save);
+                    break;
+                default:
+                    throw new NotSupportedException("Backup type not supported.");
+            }
         }
 
         return 0;
     }
 
+    private Task ZipBackup(Save save)
+    {
+        var backupFileName = Path.Combine(_settings.OutputFolder, _settings.ZipFileName);
+        var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
+
+        return _backupService.BackupAsync(save, backupFileInfo);
+    }
+
+    private Task TarZLibBackup(Save save)
+    {
+        var uniqueTimestamp = DateTime.UtcNow.ToString("s")
+                                      .Replace(":", string.Empty)
+                                      .Replace("-", string.Empty)
+                                      .Replace("T", string.Empty);
+
+        var backupFileName = Path.Combine(_settings.OutputFolder, $"{save.Name}-{uniqueTimestamp}.tar.zl");
+        var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
+
+        return _backupService.BackupAsync(save, backupFileInfo);
+    }
+
     private IDirectoryInfo? GetSaveDirectory()
     {
-        var directory = _fileSystem.DirectoryInfo.New(!string.IsNullOrWhiteSpace(_settings.SaveDirectory)
-                                                          ? _settings.SaveDirectory // If the user provided a save directory, we can use that.
-                                                          : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"Zomboid\Saves\Sandbox")); // Attempt to locate the save directory
+        var directory = _fileSystem.DirectoryInfo.New(_settings.SaveDirectory);
 
         _logger?.LogInformation($"Project Zomboid save directory: '{directory.FullName}'");
 
