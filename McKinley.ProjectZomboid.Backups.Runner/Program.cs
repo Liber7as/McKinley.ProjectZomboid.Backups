@@ -56,7 +56,7 @@ public static class Program
 
     private static CommandLineArgumentsModel? ParseArguments(IEnumerable<string> args)
     {
-        using var parser = new Parser();
+        using var parser = new Parser(settings => settings.HelpWriter = Console.Out);
 
         var parsedArgumentsResult = parser.ParseArguments<CommandLineArgumentsModel>(args);
 

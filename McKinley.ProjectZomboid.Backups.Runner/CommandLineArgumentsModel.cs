@@ -18,7 +18,7 @@ public class CommandLineArgumentsModel
     [Option("save-name", HelpText = "Only back up this save, ignores all others.")]
     public string? SaveName { get; set; }
 
-    [Option("log-level", Default = LogLevel.Information, HelpText = "The log level to output to the console.")]
+    [Option("log-level", HelpText = "The log level to output to the console.")]
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
     [Option("zip-filename", HelpText = "Zip backup file name")]
