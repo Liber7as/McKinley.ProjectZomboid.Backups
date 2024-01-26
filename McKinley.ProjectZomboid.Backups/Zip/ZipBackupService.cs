@@ -23,14 +23,14 @@ public class ZipBackupService : BaseBackupService,
 
     public async Task BackupAsync(Save save, IFileInfo destination)
     {
-        _logger?.LogInformation($"Backing up save: '{save.Directory.FullName}'");
+        _logger?.LogInformation($"Backing up save: '{save.FullName}'");
 
         // Check to see if the ZIP file already exists
         _logger?.LogInformation(destination.Exists
                                     ? $"Found backup zip file: '{destination.FullName}'"
                                     : $"Backup zip file not found. Will create: '{destination.FullName}'");
 
-        // Open the ZIP file as a stream, or create a MemoryStream for a new ZIP file. 
+        // Open the ZIP file as a stream, or create a new file. 
         await using Stream zipFileStream = destination.Exists
                                                ? destination.Open(FileMode.Open, FileAccess.ReadWrite)
                                                : destination.Create();
@@ -40,14 +40,12 @@ public class ZipBackupService : BaseBackupService,
                                  ? ZipArchiveMode.Update
                                  : ZipArchiveMode.Create;
 
-        _logger?.LogInformation("Beginning file backup...");
+        _logger?.LogInformation("Beginning file backup");
 
         // Create a zip archive from the stream above, and copy the save to it.
         using (var zipArchive = new ZipArchive(zipFileStream, zipArchiveMode, true))
         {
             await EnumerateFilesAsync(save, (entryName, saveFile) => CopyFileToZipArchiveAsync(zipArchive, entryName, saveFile));
-
-            _logger?.LogInformation("Completed file backup.");
 
             _logger?.LogInformation($"Saving zip file: '{destination.FullName}'");
         }

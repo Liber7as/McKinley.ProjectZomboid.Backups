@@ -22,30 +22,27 @@ public class ZipBackupServiceFixture
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-        _settings = serviceProvider.GetRequiredService<BackupSettings>();
         _saveService = (SaveService) serviceProvider.GetRequiredService<ISaveService>();
         _backupService = (ZipBackupService) serviceProvider.GetRequiredService<IBackupService>();
+
+        if (BackupFileInfo.Exists)
+        {
+            BackupFileInfo.Delete();
+        }
     }
 
     private ZipBackupService _backupService = null!;
     private SaveService _saveService = null!;
-    private BackupSettings _settings = null!;
     private IFileSystem _fileSystem = null!;
+
+    private IFileInfo BackupFileInfo => _fileSystem.FileInfo.New("ProjectZomboid-Backups.zip");
 
     [Test]
     public async Task BackupAsync()
     {
-        // Ensure the backup file is deleted
-        var backupFileInfo = _fileSystem.FileInfo.New("ProjectZomboid-Backups.zip");
-
-        if (backupFileInfo.Exists)
-        {
-            backupFileInfo.Delete();
-        }
-
         foreach (var save in await _saveService.GetAsync(TestHelper.SaveDirectory))
         {
-            await _backupService.BackupAsync(save, backupFileInfo);
+            await _backupService.BackupAsync(save, BackupFileInfo);
         }
 
         // TODO: Ensure everything is created
@@ -54,24 +51,16 @@ public class ZipBackupServiceFixture
     [Test]
     public async Task BackupMultipleAsync()
     {
-        // Ensure the backup file is deleted
-        var backupFileInfo = _fileSystem.FileInfo.New("ProjectZomboid-Backups.zip");
-
-        if (backupFileInfo.Exists)
-        {
-            backupFileInfo.Delete();
-        }
-
         // Backup twice:
 
         foreach (var save in await _saveService.GetAsync(TestHelper.SaveDirectory))
         {
-            await _backupService.BackupAsync(save, backupFileInfo);
+            await _backupService.BackupAsync(save, BackupFileInfo);
         }
 
         foreach (var save in await _saveService.GetAsync(TestHelper.SaveDirectory))
         {
-            await _backupService.BackupAsync(save, backupFileInfo);
+            await _backupService.BackupAsync(save, BackupFileInfo);
         }
 
         // TODO: Ensure everything is created

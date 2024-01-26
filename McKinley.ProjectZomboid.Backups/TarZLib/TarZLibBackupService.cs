@@ -10,14 +10,12 @@ using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.TarZLib;
 
-public class TarZLibBackupService : BaseBackupService,
-                                    ITarZLibBackupService
+public class TarZLibBackupService : ITarZLibBackupService
 {
     private readonly ILogger<TarZLibBackupService>? _logger;
     private readonly BackupSettings _settings;
 
     public TarZLibBackupService(BackupSettings settings, ILogger<TarZLibBackupService>? logger = null)
-        : base(settings)
     {
         _settings = settings;
         _logger = logger;
@@ -27,29 +25,32 @@ public class TarZLibBackupService : BaseBackupService,
     {
         if (destination.Exists)
         {
-            throw new ArgumentException("", nameof(destination));
+            throw new ArgumentException("This file already exists.", nameof(destination));
         }
 
-        throw new NotImplementedException();
-    }
+        _logger?.LogInformation($"Backing up save: '{save.FullName}'");
 
-    private Task CopyFileToTarArchiveAsync(TarWriter tarWriter, string entryName, SaveFile saveFile)
-    {
-        var entry = new PaxTarEntry(TarEntryType.RegularFile, entryName)
+        await using (var backupFileStream = destination.Create())
+        await using (var zlibWriter = new ZLibStream(backupFileStream, _settings.CompressionLevel))
+        await using (var tarWriter = new TarWriter(zlibWriter, TarEntryFormat.Pax))
         {
-            DataStream = saveFile.File.OpenRead()
-        };
+            _logger?.LogInformation("Beginning file backup");
 
-        _logger?.LogDebug($"'{saveFile.FullName}' -> '{entry.Name}'");
+            foreach (var saveFile in save.Files)
+            {
+                _logger?.LogDebug($"'{saveFile.FullName}' -> '{saveFile.RelativeName}'");
 
-        return tarWriter.WriteEntryAsync(entry);
-    }
+                var tarEntry = new PaxTarEntry(TarEntryType.RegularFile, saveFile.RelativeName)
+                {
+                    DataStream = saveFile.File.OpenRead()
+                };
 
-    private TarWriter CreateTarZLibWriter(Stream output, bool leaveOpen = false)
-    {
-        var zlibWriter = new ZLibStream(output, _settings.CompressionLevel, leaveOpen);
-        var tarWriter = new TarWriter(zlibWriter, false);
+                await tarWriter.WriteEntryAsync(tarEntry);
+            }
 
-        return tarWriter;
+            _logger?.LogInformation($"Saving file: '{destination.FullName}'");
+        }
+
+        _logger?.LogInformation($"File saved: '{destination.FullName}'");
     }
 }
