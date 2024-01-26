@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Ignore save files
+McKinley.ProjectZomboid.Backups.Tests/Saves/**
