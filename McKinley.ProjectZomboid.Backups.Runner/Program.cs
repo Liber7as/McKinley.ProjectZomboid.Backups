@@ -22,14 +22,14 @@ public static class Program
         return await backupJob.RunAsync(parsedArgs);
     }
 
-    private static ServiceProvider ConfigureServices(CommandLineArgumentsModel settings)
+    private static ServiceProvider ConfigureServices(CommandLineArgumentsModel args)
     {
         var services = new ServiceCollection();
 
-        services.AddSingleton(settings);
+        services.AddSingleton(args);
         services.AddScoped<BackupJob>();
 
-        switch (settings.BackupType)
+        switch (args.BackupType)
         {
             case BackupType.Zip:
                 services.AddZipBackups();
@@ -43,7 +43,7 @@ public static class Program
 
         services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders()
                                                             .AddConsole()
-                                                            .AddFilter(logLevel => logLevel >= settings.LogLevel));
+                                                            .AddFilter(logLevel => logLevel >= args.LogLevel));
 
         return services.BuildServiceProvider();
     }
