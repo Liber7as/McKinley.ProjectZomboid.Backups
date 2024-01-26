@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Formats.Tar;
-using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Threading.Tasks;
@@ -12,12 +11,12 @@ namespace McKinley.ProjectZomboid.Backups.TarZLib;
 
 public class TarZLibBackupService : ITarZLibBackupService
 {
+    private readonly CompressionSettings _compressionSettings;
     private readonly ILogger<TarZLibBackupService>? _logger;
-    private readonly BackupSettings _settings;
 
-    public TarZLibBackupService(BackupSettings settings, ILogger<TarZLibBackupService>? logger = null)
+    public TarZLibBackupService(CompressionSettings compressionSettings, ILogger<TarZLibBackupService>? logger = null)
     {
-        _settings = settings;
+        _compressionSettings = compressionSettings;
         _logger = logger;
     }
 
@@ -31,7 +30,7 @@ public class TarZLibBackupService : ITarZLibBackupService
         _logger?.LogInformation($"Backing up save: '{save.FullName}'");
 
         await using (var backupFileStream = destination.Create())
-        await using (var zlibWriter = new ZLibStream(backupFileStream, _settings.CompressionLevel))
+        await using (var zlibWriter = new ZLibStream(backupFileStream, _compressionSettings.CompressionLevel))
         await using (var tarWriter = new TarWriter(zlibWriter, TarEntryFormat.Pax))
         {
             _logger?.LogInformation("Beginning file backup");

@@ -9,27 +9,27 @@ namespace McKinley.ProjectZomboid.Backups;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddZipBackups(this IServiceCollection services, BackupSettings? settings = null)
+    public static IServiceCollection AddZipBackups(this IServiceCollection services, CompressionSettings? compressionSettings = null)
     {
-        RegisterDefaultServicesAndSettings(services, settings);
+        RegisterDefaultServicesAndSettings(services, compressionSettings);
 
         services.AddScoped<IBackupService, ZipBackupService>();
 
         return services;
     }
 
-    public static IServiceCollection AddTarZLibBackups(this IServiceCollection services, BackupSettings? settings = null)
+    public static IServiceCollection AddTarZLibBackups(this IServiceCollection services, CompressionSettings? compressionSettings = null)
     {
-        RegisterDefaultServicesAndSettings(services, settings);
+        RegisterDefaultServicesAndSettings(services, compressionSettings);
 
         services.AddScoped<IBackupService, TarZLibBackupService>();
 
         return services;
     }
 
-    private static void RegisterDefaultServicesAndSettings(IServiceCollection services, BackupSettings? settings = null)
+    private static void RegisterDefaultServicesAndSettings(IServiceCollection services, CompressionSettings? compressionSettings = null)
     {
-        services.AddSingleton(settings ?? new BackupSettings());
+        services.AddSingleton(compressionSettings ?? new CompressionSettings());
 
         services.AddScoped<IFileSystem, FileSystem>();
         services.AddScoped<ISaveService, SaveService>();

@@ -2,7 +2,7 @@
 
 namespace McKinley.ProjectZomboid.Backups.Settings;
 
-public class BackupSettings
+public class CompressionSettings
 {
     public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.SmallestSize;
 }

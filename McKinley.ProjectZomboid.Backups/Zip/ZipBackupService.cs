@@ -12,11 +12,11 @@ namespace McKinley.ProjectZomboid.Backups.Zip;
 public class ZipBackupService : IZipBackupService
 {
     private readonly ILogger<ZipBackupService>? _logger;
-    private readonly BackupSettings _settings;
+    private readonly CompressionSettings _compressionSettings;
 
-    public ZipBackupService(BackupSettings settings, ILogger<ZipBackupService>? logger = null)
+    public ZipBackupService(CompressionSettings compressionSettings, ILogger<ZipBackupService>? logger = null)
     {
-        _settings = settings;
+        _compressionSettings = compressionSettings;
         _logger = logger;
     }
 
@@ -72,7 +72,7 @@ public class ZipBackupService : IZipBackupService
 
     private async Task CopyFileToZipArchiveAsync(ZipArchive zipArchive, string entryName, SaveFile saveFile)
     {
-        var entry = zipArchive.CreateEntry(entryName, _settings.CompressionLevel);
+        var entry = zipArchive.CreateEntry(entryName, _compressionSettings.CompressionLevel);
 
         _logger?.LogDebug($"'{saveFile.FullName}' -> '{entry.FullName}'");
 
