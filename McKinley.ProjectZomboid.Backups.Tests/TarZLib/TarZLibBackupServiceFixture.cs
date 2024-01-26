@@ -6,6 +6,10 @@ using NUnit.Framework;
 
 namespace McKinley.ProjectZomboid.Backups.Tests.TarZLib;
 
+/// <summary>
+/// Tests TarZLib backups for Project Zomboid saves. In order for these tests to work, you must place a Project Zomboid save in
+/// the "Saves" folder.
+/// </summary>
 [TestFixture]
 public class TarZLibBackupServiceFixture
 {

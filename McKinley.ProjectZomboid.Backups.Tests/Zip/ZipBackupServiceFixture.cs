@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace McKinley.ProjectZomboid.Backups.Tests.Zip;
 
 /// <summary>
-/// Tests zip backups for Project Zomboid saves. In order for these tests to work, you must place a Project Zomboid save in
+/// Tests Zip backups for Project Zomboid saves. In order for these tests to work, you must place a Project Zomboid save in
 /// the "Saves" folder.
 /// </summary>
 [TestFixture]
