@@ -1,11 +1,10 @@
 ﻿using System.IO.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions;
-using McKinley.ProjectZomboid.Backups.Settings;
 using McKinley.ProjectZomboid.Backups.Zip;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace McKinley.ProjectZomboid.Backups.Tests.Zip.Services;
+namespace McKinley.ProjectZomboid.Backups.Tests.Zip;
 
 /// <summary>
 /// Tests zip backups for Project Zomboid saves. In order for these tests to work, you must place a Project Zomboid save in
@@ -19,6 +18,7 @@ public class ZipBackupServiceFixture
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddZipBackups();
+        serviceCollection.AddTestLogging();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
