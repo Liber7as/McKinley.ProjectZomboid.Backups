@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Formats.Tar;
 using System.IO;
@@ -91,81 +90,78 @@ public class TarZLibBackupService : ITarZLibBackupService
 
         await using var zlibReader = new ZLibStream(source, CompressionMode.Decompress, true);
         await using var tarReader = new TarReader(zlibReader);
+        await CopyEntriesToFileSystemAsync(tarReader, destination);
+    }
 
+    private async Task CopyEntriesToFileSystemAsync(TarReader tarReader, IDirectoryInfo destination)
+    {
         // We can async copy the copy files to the file system
         var tasks = new List<Task>();
-        var entries = new ConcurrentQueue<TarEntryDestination>();
 
-        TarEntry? entry;
-        while ((entry = await tarReader.GetNextEntryAsync(true)) != null)
+        await foreach (var entry in tarReader.GetEntriesAsync())
         {
             var entryDestination = _fileSystem.Path.Combine(destination.FullName, entry.Name);
             var entryDestinationFileInfo = _fileSystem.FileInfo.New(entryDestination);
 
-            entries.Enqueue(new TarEntryDestination(entry, entryDestinationFileInfo));
-
-            tasks.Add(Task.Run(() => CopyToFileSystemAsync(entries)));
+            tasks.Add(Task.Run(() => CopyEntryToFileSystemAsync(entry, entryDestinationFileInfo)));
         }
 
+        // Ensure the whole archive gets extracted
         await Task.WhenAll(tasks);
     }
 
-    private async Task CopyToFileSystemAsync(ConcurrentQueue<TarEntryDestination> entries)
+    private async Task CopyEntryToFileSystemAsync(TarEntry entry, IFileInfo destination)
     {
-        while (entries.TryDequeue(out var entryDestination))
+        try
         {
-            var entry = entryDestination.Entry;
-            var destination = entryDestination.Destination;
-
-            try
+            if (entry.DataStream == null)
             {
-                if (entry.DataStream == null)
-                {
-                    _logger?.LogWarning($"Could not find entry '{entry.Name}'");
-                    return;
-                }
+                _logger?.LogWarning($"Could not find entry '{entry.Name}'");
+                return;
+            }
 
-                if (destination.Directory == null)
-                {
-                    _logger?.LogWarning($"Could not figure out how to create file '{destination.FullName}'");
-                    return;
-                }
+            if (destination.Directory == null)
+            {
+                _logger?.LogWarning($"Could not figure out how to create file '{destination.FullName}'");
+                return;
+            }
 
-                if (!destination.Directory.Exists)
-                {
-                    destination.Directory.Create();
-                }
+            if (!destination.Directory.Exists)
+            {
+                destination.Directory.Create();
+            }
 
-                await using var destinationStream = destination.Create();
+            _logger?.LogInformation($"'{entry.Name}' -> '{destination.FullName}'");
 
-                await entry.DataStream.CopyToAsync(destinationStream);
+            await using var destinationStream = destination.Create();
 
-                // Project Zomboid saves can be large, so lets make sure we get rid of the file loaded into memory:
+            await entry.DataStream.CopyToAsync(destinationStream);
+
+            // Project Zomboid saves can be large, so lets make sure we get rid of the file loaded into memory:
+            await entry.DataStream.DisposeAsync();
+        }
+        catch (Exception e)
+        {
+            _logger?.LogCritical(e, e.ToString());
+
+            if (entry.DataStream != null)
+            {
                 await entry.DataStream.DisposeAsync();
             }
-            catch (Exception e)
-            {
-                _logger?.LogCritical(e, e.ToString());
 
-                if (entry.DataStream != null)
-                {
-                    await entry.DataStream.DisposeAsync();
-                }
-
-                throw;
-            }
+            throw;
         }
     }
 
     private class TarEntryDestination
     {
-        public TarEntry Entry { get; }
-        public IFileInfo Destination { get; }
-
         public TarEntryDestination(TarEntry entry, IFileInfo destination)
         {
             Entry = entry;
             Destination = destination;
         }
+
+        public TarEntry Entry { get; }
+        public IFileInfo Destination { get; }
     }
 }
