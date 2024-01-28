@@ -77,6 +77,8 @@ public class TarZLibBackupService : ITarZLibBackupService
 
         await using var backupFileStream = source.OpenRead();
         await RestoreAsync(backupFileStream, destination);
+
+        _logger?.LogInformation($"Backup restored '{destination.FullName}'");
     }
 
     public async Task RestoreAsync(Stream source, IDirectoryInfo destination)
@@ -131,7 +133,7 @@ public class TarZLibBackupService : ITarZLibBackupService
                 destination.Directory.Create();
             }
 
-            _logger?.LogInformation($"'{entry.Name}' -> '{destination.FullName}'");
+            _logger?.LogDebug($"'{entry.Name}' -> '{destination.FullName}'");
 
             await using var destinationStream = destination.Create();
 
