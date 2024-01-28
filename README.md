@@ -1,4 +1,4 @@
-This is a personal project which handles backing up Project Zomboid saves into a ZIP file.
+This is a personal project which handles backing up [Project Zomboid](https://projectzomboid.com/) saves into a ZIP file.
 
 Future plans/research:
 
