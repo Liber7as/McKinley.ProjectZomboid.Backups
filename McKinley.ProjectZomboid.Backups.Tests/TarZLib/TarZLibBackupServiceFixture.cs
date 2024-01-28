@@ -63,5 +63,7 @@ public class TarZLibBackupServiceFixture
         memoryStream.Seek(0, SeekOrigin.Begin);
 
         await _backupService.RestoreAsync(memoryStream, backupDirectory);
+
+        // TODO: Ensure everything is created
     }
 }
