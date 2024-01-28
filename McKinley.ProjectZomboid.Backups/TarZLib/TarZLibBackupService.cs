@@ -152,16 +152,4 @@ public class TarZLibBackupService : ITarZLibBackupService
             throw;
         }
     }
-
-    private class TarEntryDestination
-    {
-        public TarEntryDestination(TarEntry entry, IFileInfo destination)
-        {
-            Entry = entry;
-            Destination = destination;
-        }
-
-        public TarEntry Entry { get; }
-        public IFileInfo Destination { get; }
-    }
 }
