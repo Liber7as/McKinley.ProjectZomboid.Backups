@@ -9,10 +9,10 @@ public static class TestHelper
 {
     public static IDirectoryInfo SaveDirectory => new FileSystem().DirectoryInfo.New(Path.Combine(TestContext.CurrentContext.WorkDirectory, "../../../Saves/"));
 
-    public static void AddTestLogging(this IServiceCollection services)
+    public static void AddTestLogging(this IServiceCollection services, LogLevel logLevel = LogLevel.Information)
     {
         services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders()
                                                             .AddDebug()
-                                                            .AddFilter(_ => true));
+                                                            .AddFilter(l => l >= logLevel));
     }
 }

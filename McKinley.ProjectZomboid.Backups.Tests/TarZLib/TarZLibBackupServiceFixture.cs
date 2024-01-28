@@ -24,27 +24,44 @@ public class TarZLibBackupServiceFixture
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
         _saveService = (SaveService) serviceProvider.GetRequiredService<ISaveService>();
         _backupService = (TarZLibBackupService) serviceProvider.GetRequiredService<IBackupService>();
-
-        if (BackupFileInfo.Exists)
-        {
-            BackupFileInfo.Delete();
-        }
     }
 
     private TarZLibBackupService _backupService = null!;
     private SaveService _saveService = null!;
     private IFileSystem _fileSystem = null!;
 
-    private IFileInfo BackupFileInfo => _fileSystem.FileInfo.New("ProjectZomboid-Backups.tar.zl");
-
     [Test]
     public async Task BackupAsync()
     {
+        await using var memoryStream = new MemoryStream();
+
         foreach (var save in await _saveService.GetAsync(TestHelper.SaveDirectory))
         {
-            await _backupService.BackupAsync(save, BackupFileInfo);
+            await _backupService.BackupAsync(save, memoryStream);
         }
 
         // TODO: Ensure everything is created
+    }
+
+    [Test]
+    public async Task RestoreAsync()
+    {
+        await using var memoryStream = new MemoryStream();
+
+        foreach (var save in await _saveService.GetAsync(TestHelper.SaveDirectory))
+        {
+            await _backupService.BackupAsync(save, memoryStream);
+        }
+
+        var backupDirectory = _fileSystem.DirectoryInfo.New("Restored-Backups");
+
+        if (backupDirectory.Exists)
+        {
+            backupDirectory.Delete(true);
+        }
+
+        memoryStream.Seek(0, SeekOrigin.Begin);
+
+        await _backupService.RestoreAsync(memoryStream, backupDirectory);
     }
 }

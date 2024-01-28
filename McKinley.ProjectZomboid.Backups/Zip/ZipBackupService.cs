@@ -20,6 +20,13 @@ public class ZipBackupService : IZipBackupService
         _logger = logger;
     }
 
+    public Task BackupAsync(Save save, Stream destination)
+    {
+        // TODO: Check destination's length and seek-ability to see if a ZIP file should be created or updated
+
+        throw new NotImplementedException();
+    }
+
     public async Task BackupAsync(Save save, IFileInfo destination)
     {
         _logger?.LogInformation($"Backing up save: '{save.FullName}'");
@@ -68,6 +75,16 @@ public class ZipBackupService : IZipBackupService
         await zipFileStream.FlushAsync();
 
         _logger?.LogInformation($"Zip file saved: '{destination.FullName}'");
+    }
+
+    public Task RestoreAsync(IFileInfo source, IDirectoryInfo destination)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RestoreAsync(Stream source, IDirectoryInfo destination)
+    {
+        throw new NotImplementedException();
     }
 
     private async Task CopyFileToZipArchiveAsync(ZipArchive zipArchive, string entryName, SaveFile saveFile)
