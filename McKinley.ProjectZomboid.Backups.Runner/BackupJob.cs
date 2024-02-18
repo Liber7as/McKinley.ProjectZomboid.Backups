@@ -1,6 +1,7 @@
 ﻿using System.IO.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions;
 using McKinley.ProjectZomboid.Backups.Abstractions.Models;
+using McKinley.ProjectZomboid.Backups.TarBrotli;
 using McKinley.ProjectZomboid.Backups.TarZLib;
 using McKinley.ProjectZomboid.Backups.Zip;
 using Microsoft.Extensions.Logging;
@@ -13,17 +14,20 @@ public class BackupJob
     private readonly ILogger<BackupJob>? _logger;
     private readonly ISaveService _saveService;
     private readonly ITarZLibBackupService _tarZLibBackupService;
+    private readonly ITarBrotliBackupService _tarBrotliBackupService;
     private readonly IZipBackupService _zipBackupService;
 
     public BackupJob(ISaveService saveService,
                      IZipBackupService zipBackupService,
                      ITarZLibBackupService tarZLibBackupService,
+                     ITarBrotliBackupService tarBrotliBackupService,
                      IFileSystem fileSystem,
                      ILogger<BackupJob>? logger = null)
     {
         _saveService = saveService;
         _zipBackupService = zipBackupService;
         _tarZLibBackupService = tarZLibBackupService;
+        _tarBrotliBackupService = tarBrotliBackupService;
         _fileSystem = fileSystem;
         _logger = logger;
     }
@@ -53,41 +57,39 @@ public class BackupJob
 
         foreach (var save in saves)
         {
+            // Create a unique timestamp in the Project Zomboid format
+            var uniqueTimestamp = DateTime.UtcNow.ToString("s")
+                                          .Replace(":", "-")
+                                          .Replace("T", "_");
+
+            var backupName = $"{save.Name}-Backup-{uniqueTimestamp}";
+
+            string backupFileName;
+            IBackupService backupService;
+
             switch (args.BackupType)
             {
                 case BackupType.Zip:
-                    await ZipBackup(save, args);
+                    backupFileName = backupName + ".zip";
+                    backupService = _zipBackupService;
                     break;
                 case BackupType.TarZLib:
-                    await TarZLibBackup(save, args);
+                    backupFileName = backupName + ".tar.zl";
+                    backupService = _tarZLibBackupService;
+                    break;
+                case BackupType.TarBrotli:
+                    backupFileName = backupName + ".tar.br";
+                    backupService = _tarBrotliBackupService;
                     break;
                 default:
                     throw new NotSupportedException("Backup type not supported.");
             }
+
+            var backupFileInfo = _fileSystem.FileInfo.New(_fileSystem.Path.Combine(args.OutputFolder, backupFileName));
+            await backupService.BackupAsync(save, backupFileInfo);
         }
 
         return 0;
-    }
-
-    private Task ZipBackup(Save save, CommandLineArgumentsModel args)
-    {
-        var backupFileName = Path.Combine(args.OutputFolder, args.ZipFileName);
-        var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
-
-        return _zipBackupService.BackupAsync(save, backupFileInfo);
-    }
-
-    private Task TarZLibBackup(Save save, CommandLineArgumentsModel args)
-    {
-        var uniqueTimestamp = DateTime.UtcNow.ToString("s")
-                                      .Replace(":", string.Empty)
-                                      .Replace("-", string.Empty)
-                                      .Replace("T", string.Empty);
-
-        var backupFileName = Path.Combine(args.OutputFolder, $"{save.Name}-Backup-{uniqueTimestamp}.tar.zl");
-        var backupFileInfo = _fileSystem.FileInfo.New(backupFileName);
-
-        return _tarZLibBackupService.BackupAsync(save, backupFileInfo);
     }
 
     private IDirectoryInfo? GetSaveDirectory(CommandLineArgumentsModel args)

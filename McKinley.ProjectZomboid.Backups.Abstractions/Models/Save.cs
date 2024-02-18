@@ -12,6 +12,8 @@ public class Save
         Directory = directory;
     }
 
+    public IFileSystem FileSystem => Directory.FileSystem;
+
     public IDirectoryInfo Directory { get; }
 
     public IEnumerable<SaveFile> Files => Directory.GetFiles("*", SearchOption.AllDirectories).Select(file => new SaveFile(this, file));

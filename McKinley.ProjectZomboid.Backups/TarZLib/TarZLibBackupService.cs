@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using McKinley.ProjectZomboid.Backups.Abstractions.Models;
 using McKinley.ProjectZomboid.Backups.Settings;
+using McKinley.ProjectZomboid.Backups.Tar;
 using Microsoft.Extensions.Logging;
 
 namespace McKinley.ProjectZomboid.Backups.TarZLib;
@@ -14,13 +15,13 @@ namespace McKinley.ProjectZomboid.Backups.TarZLib;
 public class TarZLibBackupService : ITarZLibBackupService
 {
     private readonly CompressionSettings _compressionSettings;
-    private readonly IFileSystem _fileSystem;
+    private readonly ITarBackupService _tarBackupService;
     private readonly ILogger<TarZLibBackupService>? _logger;
 
-    public TarZLibBackupService(CompressionSettings compressionSettings, IFileSystem fileSystem, ILogger<TarZLibBackupService>? logger = null)
+    public TarZLibBackupService(CompressionSettings compressionSettings, ITarBackupService tarBackupService, ILogger<TarZLibBackupService>? logger = null)
     {
         _compressionSettings = compressionSettings;
-        _fileSystem = fileSystem;
+        _tarBackupService = tarBackupService;
         _logger = logger;
     }
 
@@ -29,23 +30,8 @@ public class TarZLibBackupService : ITarZLibBackupService
         _logger?.LogInformation($"Backing up save: '{save.FullName}'");
 
         await using (var zlibWriter = new ZLibStream(destination, _compressionSettings.CompressionLevel, true))
-        await using (var tarWriter = new TarWriter(zlibWriter, TarEntryFormat.Pax))
         {
-            _logger?.LogInformation("Beginning file backup");
-
-            foreach (var saveFile in save.Files)
-            {
-                var entryName = _fileSystem.Path.Combine(save.Name, saveFile.RelativeName);
-
-                _logger?.LogDebug($"'{saveFile.FullName}' -> '{entryName}'");
-
-                var tarEntry = new PaxTarEntry(TarEntryType.RegularFile, entryName)
-                {
-                    DataStream = saveFile.File.OpenRead()
-                };
-
-                await tarWriter.WriteEntryAsync(tarEntry);
-            }
+            await _tarBackupService.BackupAsync(save, zlibWriter);
         }
 
         _logger?.LogInformation("Backup written.");
@@ -75,9 +61,11 @@ public class TarZLibBackupService : ITarZLibBackupService
             throw new ArgumentException("Backup source does not exist.", nameof(source));
         }
 
-        await using var backupFileStream = source.OpenRead();
-        await RestoreAsync(backupFileStream, destination);
-
+        await using (var backupFileStream = source.OpenRead())
+        {
+            await RestoreAsync(backupFileStream, destination);
+        }
+        
         _logger?.LogInformation($"Backup restored '{destination.FullName}'");
     }
 
@@ -102,8 +90,8 @@ public class TarZLibBackupService : ITarZLibBackupService
 
         await foreach (var entry in tarReader.GetEntriesAsync())
         {
-            var entryDestination = _fileSystem.Path.Combine(destination.FullName, entry.Name);
-            var entryDestinationFileInfo = _fileSystem.FileInfo.New(entryDestination);
+            var entryDestination = destination.FileSystem.Path.Combine(destination.FullName, entry.Name);
+            var entryDestinationFileInfo = destination.FileSystem.FileInfo.New(entryDestination);
 
             tasks.Add(Task.Run(() => CopyEntryToFileSystemAsync(entry, entryDestinationFileInfo)));
         }

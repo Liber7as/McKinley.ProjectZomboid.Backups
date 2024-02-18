@@ -6,7 +6,7 @@ namespace McKinley.ProjectZomboid.Backups.Runner;
 
 public class CommandLineArgumentsModel
 {
-    [Option('t', "type", HelpText = "The backup file type. Zip and TarZLib are supported. The default is Zip")]
+    [Option('t', "type", HelpText = "The backup file type. Zip, TarZLib, and TarBrotli are supported. The default is Zip")]
     public BackupType BackupType { get; set; } = BackupType.Zip;
 
     [Option('o', "output", HelpText = "Backup output folder. By default, the current directory will be used.")]
@@ -20,9 +20,6 @@ public class CommandLineArgumentsModel
 
     [Option("log-level", HelpText = "The log level to output to the console (Trace/Debug/Information/Warning/Error/Critical/None). The default is Information.")]
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
-
-    [Option("zip-filename", HelpText = "Zip backup file name. The default is ProjectZomboid-Backups.zip")]
-    public string ZipFileName { get; set; } = "ProjectZomboid-Backups.zip";
 
     [Option("compression-level", HelpText = "Compression Level (Optimal/Fastest/NoCompression/SmallestSize). The default is Optimal.")]
     public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.Optimal;

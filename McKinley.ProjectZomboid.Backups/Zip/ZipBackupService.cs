@@ -20,61 +20,56 @@ public class ZipBackupService : IZipBackupService
         _logger = logger;
     }
 
-    public Task BackupAsync(Save save, Stream destination)
+    public async Task BackupAsync(Save save, Stream destination)
     {
-        // TODO: Check destination's length and seek-ability to see if a ZIP file should be created or updated
+        _logger?.LogInformation($"Backing up save: '{save.FullName}'");
 
-        throw new NotImplementedException();
+        // Determine if we should create or update a ZIP file.
+        var zipArchiveMode = destination.CanSeek && destination.Length > 0
+                              ? ZipArchiveMode.Update
+                              : ZipArchiveMode.Create;
+
+        _logger?.LogInformation(zipArchiveMode == ZipArchiveMode.Update
+                                    ? "Updating ZIP file"
+                                    : "Creating ZIP file");
+
+        _logger?.LogInformation("Beginning file backup");
+
+        // Create a zip archive from the stream above, and copy the save to it.
+        using (var zipArchive = new ZipArchive(destination, zipArchiveMode, true))
+        {
+
+            // Enumerate all the files in the save
+            foreach (var saveFile in save.Files)
+            {
+                // Create an entry name for the file
+                var entryName = save.FileSystem.Path.Combine(save.Name, saveFile.RelativeName);
+
+                await CopyFileToZipArchiveAsync(zipArchive, entryName, saveFile);
+            }
+
+            _logger?.LogInformation("Saving zip file...");
+        }
+
+        _logger?.LogInformation("Backup written.");
     }
 
     public async Task BackupAsync(Save save, IFileInfo destination)
     {
-        _logger?.LogInformation($"Backing up save: '{save.FullName}'");
-
         // Check to see if the ZIP file already exists
         _logger?.LogInformation(destination.Exists
                                     ? $"Found backup zip file: '{destination.FullName}'"
                                     : $"Backup zip file not found. Will create: '{destination.FullName}'");
 
         // Open the ZIP file as a stream, or create a new file. 
-        await using Stream zipFileStream = destination.Exists
-                                               ? destination.Open(FileMode.Open, FileAccess.ReadWrite)
-                                               : destination.Create();
-
-        // Determine if we should create or update a ZIP file.
-        var zipArchiveMode = destination.Exists
-                                 ? ZipArchiveMode.Update
-                                 : ZipArchiveMode.Create;
-
-        _logger?.LogInformation("Beginning file backup");
-
-        // Create a zip archive from the stream above, and copy the save to it.
-        using (var zipArchive = new ZipArchive(zipFileStream, zipArchiveMode, true))
+        await using (Stream zipFileStream = destination.Exists
+                                                ? destination.Open(FileMode.Open, FileAccess.ReadWrite)
+                                                : destination.Create())
         {
-            // Create a unique timestamp for the backup
-            var uniqueDateString = DateTime.UtcNow.ToString("s")
-                                           .Replace(":", string.Empty)
-                                           .Replace("-", string.Empty)
-                                           .Replace("T", string.Empty);
-
-            // Create a folder name for inside the ZIP file backup
-            var entryPrefix = $"{save.Name}-Backup-{uniqueDateString}";
-
-            // Enumerate all the files in the save
-            foreach (var saveFile in save.Files)
-            {
-                // Create an entry name for the file
-                var entryName = Path.Combine(entryPrefix, saveFile.RelativeName);
-
-                await CopyFileToZipArchiveAsync(zipArchive, entryName, saveFile);
-            }
-
-            _logger?.LogInformation($"Saving zip file: '{destination.FullName}'");
+            await BackupAsync(save, zipFileStream);
         }
 
-        await zipFileStream.FlushAsync();
-
-        _logger?.LogInformation($"Zip file saved: '{destination.FullName}'");
+        _logger?.LogInformation($"File saved: '{destination.FullName}'");
     }
 
     public Task RestoreAsync(IFileInfo source, IDirectoryInfo destination)
@@ -99,9 +94,5 @@ public class ZipBackupService : IZipBackupService
 
         // Copy the file to the ZIP archive
         await fileStream.CopyToAsync(zipEntryStream);
-
-        // Flush to ensure everything is sent
-        await fileStream.FlushAsync();
-        await zipEntryStream.FlushAsync();
     }
 }
