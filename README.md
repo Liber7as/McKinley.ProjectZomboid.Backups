@@ -4,6 +4,7 @@ Future plans/research:
 
 - A GUI for managing backups.
 - Run on a schedule, detect when a Project Zomboid save is no longer file-locked, then back it up. (Not sure if this is possible yet)
+- Add commands to restore a backup. Currently, restoring is not supported. For this reason, I recommend the "Zip" format until I can add logic to restore backups.
 
 ## Requirements
 
